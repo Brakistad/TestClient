@@ -165,7 +165,7 @@ print("Mqtt connected")
 
 client.loop_start()
 t.sleep(1)
-transmit_gen_data(client)
+transmit(client)
 t.sleep(1)
 client.loop_stop()
 client.disconnect()
