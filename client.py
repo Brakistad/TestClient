@@ -1,9 +1,12 @@
 import json
 import paho.mqtt.client as mqtt
 import time as t
+from influxdb import DataFrameClient, InfluxDBClient
 import random as rand
 import numpy as np
+import pandas
 import datetime
+import matplotlib.pyplot as plt
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -31,31 +34,31 @@ def total_ms_now():
 def gen_data(n, field):
     if field == "gps":
         breviksbanen = [
-                "[59.063496, 9.688832]",
-                "[59.064116, 9.689688]",
-                "[59.065076, 9.689794]",
-                "[59.069918, 9.687934]",
-                "[59.072009, 9.688212]",
-                "[59.075388, 9.688887]",
-                "[59.076794, 9.691155]",
-                "[59.077544, 9.692953]",
-                "[59.079202, 9.694451]",
-                "[59.080472, 9.697031]",
-                "[59.081187, 9.697524]",
-                "[59.091594, 9.692269]",
-                "[59.097757, 9.685446]",
-                "[59.101612, 9.688964]",
-                "[59.103712, 9.695014]",
-                "[59.105702, 9.696470]",
-                "[59.108464, 9.696414]",
-                "[59.113491, 9.700246]",
-                "[59.118577, 9.705813]",
-                "[59.124413, 9.700805]",
-                "[59.121383, 9.690374]",
-                "[59.122383, 9.686183]",
-                "[59.125672, 9.680783]",
-                "[59.126202, 9.677620]",
-                "[59.127296, 9.675328]"]
+            "[59.063496, 9.688832]",
+            "[59.064116, 9.689688]",
+            "[59.065076, 9.689794]",
+            "[59.069918, 9.687934]",
+            "[59.072009, 9.688212]",
+            "[59.075388, 9.688887]",
+            "[59.076794, 9.691155]",
+            "[59.077544, 9.692953]",
+            "[59.079202, 9.694451]",
+            "[59.080472, 9.697031]",
+            "[59.081187, 9.697524]",
+            "[59.091594, 9.692269]",
+            "[59.097757, 9.685446]",
+            "[59.101612, 9.688964]",
+            "[59.103712, 9.695014]",
+            "[59.105702, 9.696470]",
+            "[59.108464, 9.696414]",
+            "[59.113491, 9.700246]",
+            "[59.118577, 9.705813]",
+            "[59.124413, 9.700805]",
+            "[59.121383, 9.690374]",
+            "[59.122383, 9.686183]",
+            "[59.125672, 9.680783]",
+            "[59.126202, 9.677620]",
+            "[59.127296, 9.675328]"]
         result = breviksbanen
     else:
         x = np.linspace(0, n, num=n + 1, endpoint=True)
@@ -156,17 +159,39 @@ def transmit(client):
         transmit_gen_data(client, database, field, data, time)
 
 
-client = mqtt.Client()
-client.username_pw_set("cemit", "SuperPassord!")
-client.on_connect = on_connect
-client.on_message = on_message
-client.connect("13.69.250.61", 1883)
-print("Mqtt connected")
+def push_test_data_to_mqtt():
+    client = mqtt.Client()
+    client.username_pw_set("cemit", "SuperPassord!")
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect("13.69.250.61", 1883)
+    print("Mqtt connected")
 
-client.loop_start()
-t.sleep(1)
-transmit(client)
-t.sleep(1)
-client.loop_stop()
-client.disconnect()
-t.sleep(4)
+    client.loop_start()
+    t.sleep(1)
+    transmit(client)
+    t.sleep(1)
+    client.loop_stop()
+    client.disconnect()
+    t.sleep(4)
+
+
+def connect_influxdb():
+    influx_client = InfluxDBClient('127.0.0.1', port=8086, database='cargo_net', username='cemit',
+                                   password='3rn3DZKreAQK7AJc')
+    query = "SELECT \"Temperature\" FROM \"train\" WHERE time >= 1601006430705ms and time <= 1601014100769ms GROUP BY \"sensor_id\""
+    result = influx_client.query(query)
+    series = {}
+    for i in result.raw['series']:
+        id = i['tags']['sensor_id']
+        time, value = map(list, zip(*i['values']))
+        series.update(
+            {'%s' % id: {'time': time, 'values': value}})
+
+    print(series)
+    plt.plot(series['wheel_Ch04']['time'], series['wheel_Ch04']['values'])
+    plt.show()
+
+
+
+connect_influxdb()
