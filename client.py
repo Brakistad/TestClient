@@ -464,5 +464,7 @@ def send_to_mqtt(packet, db = "testcargo"):
 # parse_influxdb('influxdb.devcemi.com')
 # parse_influxdb('influxdb.devcemi.com', 'cargo_net', messages)
 # test_traffic_mqtt()
-result = connect_influxdb("influxdb.devcemi.com", "cargo_net", from_time="14d").raw
-packet = sort_influx_result_to_mqtt(result)
+
+################# CURRENT #################
+# result = connect_influxdb("influxdb.devcemi.com", "cargo_net", from_time="14d").raw
+# packet = sort_influx_result_to_mqtt(result)
