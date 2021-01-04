@@ -1,0 +1,28 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb:1.8
+    restart: always
+    volumes:
+      - "./influxdb:/var/lib/influxdb"
+      - "./influxdb/conf:/etc/influxdb/"
+    ports:
+      - "1086:1086"
+
+  mqtt_to_influxdb:
+    image: mqtt_to_influxdb
+    restart: always
+    links:
+      - influxdb
+      - mosquitto
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  mosquitto:
+    image: eclipse-mosquitto:1.6
+    restart: always
+    volumes:
+      - "./mosquitto:/mosquitto"
+    ports:
+      - "1883:1053"
+
