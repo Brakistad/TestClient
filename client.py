@@ -1,7 +1,9 @@
-from lib.mqtt import query_influxdb, migrateSeries
+from lib.mqtt import query_influxdb, migrateSeries, connect_influxdb
 import csv
 import pandas as pd
 from influxdb import InfluxDBClient
+
+#connect_influxdb(host='db1-dev.cemit.digital', db='cargo_net')
 
 # unixWeek = 604800000
 # fromUnixTime = 1602967684458

@@ -274,7 +274,7 @@ def push_test_data_to_mqtt():
 def connect_influxdb(host='127.0.0.1', db='testcargo', from_time="1d", to_time="now()", field="Temperature"):
     print("connecting to influxdb")
     influx_client = InfluxDBClient(host, port=8086, database=db, username='cemit',
-                                   password='3rn3DZKreAQK7AJc', ssl=True)
+                                   password='3rn3DZKreAQK7AJc', ssl=True, verify_ssl=True)
 
     print("connected to influxdb")
     query = f"SELECT \"{field}\" FROM \"train\" WHERE time >= now()-{from_time} AND time <= {to_time} GROUP BY \"sensor_id\""
